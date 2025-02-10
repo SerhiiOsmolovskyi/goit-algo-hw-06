@@ -1,6 +1,35 @@
 import networkx as nx
 import matplotlib.pyplot as plt
 
+def dijkstra(graph, start, target):
+    unvisited_nodes = set(graph.nodes)
+    distances = {node: float('inf') for node in graph.nodes}
+    previous_nodes = {node: None for node in graph.nodes}
+    distances[start] = 0
+    
+    while unvisited_nodes:
+        current_node = min(unvisited_nodes, key=lambda node: distances[node])
+        unvisited_nodes.remove(current_node)
+        
+        if current_node == target:
+            break
+        
+        for neighbor in graph.neighbors(current_node):
+            if neighbor in unvisited_nodes:
+                weight = graph[current_node][neighbor]['weight']
+                distance = distances[current_node] + weight
+                
+                if distance < distances[neighbor]:
+                    distances[neighbor] = distance
+                    previous_nodes[neighbor] = current_node
+    
+    path, node = [], target
+    while node is not None:
+        path.append(node)
+        node = previous_nodes[node]
+    
+    return path[::-1], distances[target]
+
 # Створення графа
 G = nx.Graph()
 
@@ -16,16 +45,13 @@ edges = [
 ]
 G.add_weighted_edges_from(edges)
 
-# Алгоритм Дейкстри для знаходження найкоротшого шляху
-shortest_path = nx.shortest_path(G, source="Центр", target="Передмістя", weight="weight")
-shortest_distance = nx.shortest_path_length(G, source="Центр", target="Передмістя", weight="weight")
-
+# Використання власноручної реалізації Дейкстри
+shortest_path, shortest_distance = dijkstra(G, "Центр", "Передмістя")
 print("Найкоротший шлях за Дейкстрою:", shortest_path)
 print("Загальна вага (відстань):", shortest_distance)
 
 # Візуалізація графу та найкоротшого шляху
-pos = nx.spring_layout(G)  # Розміщення вершин
-
+pos = nx.spring_layout(G)
 plt.figure(figsize=(8, 6))
 
 # Малюємо граф
